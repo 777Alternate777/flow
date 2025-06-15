@@ -1,0 +1,42 @@
+function generateAddress() {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  return 'bc1q' + Array.from({ length: 30 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+function splitAmount(amount) {
+  const parts = [];
+  let remaining = amount;
+  while (remaining > 0.05) {
+    let part = Math.min(remaining, +(Math.random() * 0.3 + 0.05).toFixed(4));
+    part = Math.min(part, remaining);
+    parts.push(+part.toFixed(4));
+    remaining = +(remaining - part).toFixed(4);
+  }
+  if (remaining > 0) parts.push(+remaining.toFixed(4));
+  return parts;
+}
+
+document.getElementById("mixerForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const inputAddress = document.getElementById("btcAddress").value.trim();
+  const inputAmount = parseFloat(document.getElementById("btcAmount").value);
+
+  if (!inputAddress || isNaN(inputAmount) || inputAmount <= 0) return;
+
+  const parts = splitAmount(inputAmount);
+  const shuffled = parts.map(amount => ({
+    to: generateAddress(),
+    amount
+  })).sort(() => Math.random() - 0.5);
+
+  const output = document.getElementById("output");
+  output.innerHTML = `🟢 Input Address:\n${inputAddress}\n\n💰 Total Sent: ${inputAmount} BTC\n\n🎲 Mixed Outputs:\n`;
+
+  shuffled.forEach((tx, i) => {
+    const delay = (Math.random() * 1.5 + 0.5).toFixed(1);
+    output.innerHTML += `→ ${tx.amount} BTC → ${tx.to} (delay ${delay}s)\n`;
+  });
+
+  output.innerHTML += `\n✅ Mixing complete. No traceable path.`;
+});
